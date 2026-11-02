@@ -1,0 +1,3 @@
+Line 1, Column 4: IDENTIFIER "host"
+Line 1, Column 9: ASSIGN "="
+Line 1, Column 11: INTEGER "42"

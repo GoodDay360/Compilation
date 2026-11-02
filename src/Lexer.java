@@ -558,6 +558,23 @@ public class Lexer {
    * @return the next token.
    * @exception java.io.IOException if any I/O-Error occurs.
    */
+  private void emitToken(String type, String text) {
+    printToken(type, text);
+    adjustUnicodeColumn(text);
+  }
+
+  // JFlex counts UTF-16 code units for columns. A supplementary character such as an emoji
+  // uses two code units but is one Unicode character, so subtract the extra unit from the column.
+  private void adjustUnicodeColumn(String text) {
+    for (int i = 0; i < text.length();) {
+      int codePoint = text.codePointAt(i);
+      if (Character.charCount(codePoint) == 2) {
+        yycolumn--;
+      }
+      i += Character.charCount(codePoint);
+    }
+  }
+
   public void yylex() throws java.io.IOException
   {
     int zzInput;
@@ -695,57 +712,59 @@ public class Lexer {
 
       if (zzInput == YYEOF && zzStartRead == zzCurrentPos) {
         zzAtEOF = true;
-        return null;
+        return;
       }
       else {
         switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
           case 1:
             { System.err.printf("Error: Unexpected character '%s' at Line %d, Column %d\n", yytext(), yyline + 1, yycolumn + 1);
+              adjustUnicodeColumn(yytext());
             }
           // fall through
           case 11: break;
           case 2:
             { /* ignore */
+              adjustUnicodeColumn(yytext());
             }
           // fall through
           case 12: break;
           case 3:
-            { printToken("INTEGER", yytext());
+            { emitToken("INTEGER", yytext());
             }
           // fall through
           case 13: break;
           case 4:
-            { printToken("ASSIGN", yytext());
+            { emitToken("ASSIGN", yytext());
             }
           // fall through
           case 14: break;
           case 5:
-            { printToken("IDENTIFIER", yytext());
+            { emitToken("IDENTIFIER", yytext());
             }
           // fall through
           case 15: break;
           case 6:
-            { printToken("LBRACKET", yytext());
+            { emitToken("LBRACKET", yytext());
             }
           // fall through
           case 16: break;
           case 7:
-            { printToken("RBRACKET", yytext());
+            { emitToken("RBRACKET", yytext());
             }
           // fall through
           case 17: break;
           case 8:
-            { printToken("STRING", yytext());
+            { emitToken("STRING", yytext());
             }
           // fall through
           case 18: break;
           case 9:
-            { printToken("DECIMAL", yytext());
+            { emitToken("DECIMAL", yytext());
             }
           // fall through
           case 19: break;
           case 10:
-            { printToken("BOOLEAN", yytext());
+            { emitToken("BOOLEAN", yytext());
             }
           // fall through
           case 20: break;

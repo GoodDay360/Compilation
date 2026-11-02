@@ -1,1 +1,59 @@
-import java.io.*;%%%class Lexer%public%unicode%line%column%type void%{    // Helper method to format and print tokens with their line and column positions    private void printToken(String type, String text) {        // yyline and yycolumn are 0-indexed, so we add 1 for user-facing output        System.out.printf("Line %d, Column %d: %s \"%s\"\n", yyline + 1, yycolumn + 1, type, text);    }%}/* Regex Macros defined exactly per the token specification */Identifier = [a-zA-Z_][a-zA-Z0-9_]*Integer    = [0-9]+Decimal    = [0-9]+"."[0-9]+String     = \"[^\r\n\"]*\"Whitespace = [ \t\r\n]+Comment    = "#"[^\r\n]*%%<YYINITIAL> {    /* Fixed Symbols */    "["             { printToken("LBRACKET", yytext()); }    "]"             { printToken("RBRACKET", yytext()); }    "="             { printToken("ASSIGN", yytext()); }        /* Case 1: BOOLEAN precedes IDENTIFIER to prioritize "true"/"false" when string lengths are equal.       Longer strings like "trueValue" will automatically fall through to IDENTIFIER due to JFlex's longest-match rule. */    "true" | "false" { printToken("BOOLEAN", yytext()); }        /* Identifiers */    {Identifier}    { printToken("IDENTIFIER", yytext()); }        /* Case 2: DECIMAL and INTEGER. JFlex automatically selects DECIMAL for "30.5" due to longest-match preference. */    {Decimal}       { printToken("DECIMAL", yytext()); }    {Integer}       { printToken("INTEGER", yytext()); }        /* Strings */    {String}        { printToken("STRING", yytext()); }        /* Ignored Input */    {Whitespace}    { /* Ignore */ }    {Comment}       { /* Ignore */ }        /* Error Handling: Reports unexpected characters and allows scanning to continue */    [^]             { System.err.printf("Error: Unexpected character '%s' at Line %d, Column %d\n", yytext(), yyline + 1, yycolumn + 1); }}
+import java.io.*;
+
+%%
+
+%class Lexer
+%public
+%unicode
+%line
+%column
+%type void
+
+%{
+    private void printToken(String type, String text) {
+        System.out.printf("Line %d, Column %d: %s \"%s\"\n", yyline + 1, yycolumn + 1, type, text);
+    }
+
+    private void emitToken(String type, String text) {
+        printToken(type, text);
+        adjustUnicodeColumn(text);
+    }
+
+    // JFlex counts UTF-16 code units for columns. A supplementary character such as an emoji
+    // uses two code units but is one Unicode character, so subtract the extra unit from the column.
+    private void adjustUnicodeColumn(String text) {
+        for (int i = 0; i < text.length();) {
+            int codePoint = text.codePointAt(i);
+            if (Character.charCount(codePoint) == 2) {
+                yycolumn--;
+            }
+            i += Character.charCount(codePoint);
+        }
+    }
+%}
+
+Identifier = [a-zA-Z_][a-zA-Z0-9_]*
+Integer    = [0-9]+
+Decimal    = [0-9]+"."[0-9]+
+String     = \"[^\r\n\"]*\"
+Whitespace = [ \t\r\n]+
+Comment    = "#"[^\r\n]*
+
+%%
+
+<YYINITIAL> {
+    "["              { emitToken("LBRACKET", yytext()); }
+    "]"              { emitToken("RBRACKET", yytext()); }
+    "="              { emitToken("ASSIGN", yytext()); }
+    "true" | "false" { emitToken("BOOLEAN", yytext()); }
+    {Identifier}     { emitToken("IDENTIFIER", yytext()); }
+    {Decimal}        { emitToken("DECIMAL", yytext()); }
+    {Integer}        { emitToken("INTEGER", yytext()); }
+    {String}         { emitToken("STRING", yytext()); }
+    {Whitespace}     { adjustUnicodeColumn(yytext()); }
+    {Comment}        { adjustUnicodeColumn(yytext()); }
+    [^]              {
+                         System.err.printf("Error: Unexpected character '%s' at Line %d, Column %d\n", yytext(), yyline + 1, yycolumn + 1);
+                         adjustUnicodeColumn(yytext());
+                     }
+}
