@@ -10,8 +10,25 @@ import java.io.*;
 %type void
 
 %{
+    private final StringBuilder output = new StringBuilder();
+    private final StringBuilder errors = new StringBuilder();
+
     private void printToken(String type, String text) {
-        System.out.printf("Line %d, Column %d: %s \"%s\"\n", yyline + 1, yycolumn + 1, type, text);
+        output.append(String.format("Line %d, Column %d: %s \"%s\"\n",
+                yyline + 1, yycolumn + 1, type, text));
+    }
+
+    private void printError(String text) {
+        errors.append(String.format("Error: Unexpected character '%s' at Line %d, Column %d\n",
+                text, yyline + 1, yycolumn + 1));
+    }
+
+    public String getOutput() {
+        return output.toString();
+    }
+
+    public String getErrors() {
+        return errors.toString();
     }
 
     private void emitToken(String type, String text) {
@@ -53,7 +70,7 @@ Comment    = "#"[^\r\n]*
     {Whitespace}     { adjustUnicodeColumn(yytext()); }
     {Comment}        { adjustUnicodeColumn(yytext()); }
     [^]              {
-                         System.err.printf("Error: Unexpected character '%s' at Line %d, Column %d\n", yytext(), yyline + 1, yycolumn + 1);
+                         printError(yytext());
                          adjustUnicodeColumn(yytext());
                      }
 }

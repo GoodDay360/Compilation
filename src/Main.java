@@ -9,18 +9,33 @@ public final class Main {
     }
 
     public static void main(String[] args) throws IOException {
-        // The program expects exactly one command-line argument: the configuration file to scan.
         if (args.length != 1) {
             System.err.println("Usage: java Main <configuration-file>");
             System.exit(2);
             return;
         }
 
-        // Open the file as UTF-8 so non-ASCII text is read correctly. The try block closes
-        // the file when scanning finishes, including if reading or scanning reports an error.
-        try (Reader reader = Files.newBufferedReader(Paths.get(args[0]), StandardCharsets.UTF_8)) {
-            // Lexer reads characters from the file and prints each recognized token and its position.
-            new Lexer(reader).yylex();
+        Result result = scan(args[0]);
+        System.out.print(result.output);
+        System.err.print(result.errors);
+    }
+
+    public static Result scan(String file) throws IOException {
+        try (Reader reader = Files.newBufferedReader(Paths.get(file), StandardCharsets.UTF_8)) {
+            Lexer lexer = new Lexer(reader);
+            lexer.yylex();
+            return new Result(lexer.getOutput(), lexer.getErrors());
+        }
+    }
+
+
+    public static final class Result {
+        public final String output;
+        public final String errors;
+
+        private Result(String output, String errors) {
+            this.output = output;
+            this.errors = errors;
         }
     }
 }

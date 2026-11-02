@@ -287,7 +287,26 @@ public class Lexer {
   private boolean zzEOFDone;
 
   /* user code: */
-    // Helper method to format and print tokens exactly as requested    private void printToken(String type, String text) {        // yyline and yycolumn are 0-indexed, so we add 1        System.out.printf("Line %d, Column %d: %s \"%s\"\n", yyline + 1, yycolumn + 1, type, text);    }
+    private final StringBuilder output = new StringBuilder();
+    private final StringBuilder errors = new StringBuilder();
+
+    private void printToken(String type, String text) {
+        output.append(String.format("Line %d, Column %d: %s \"%s\"\n",
+                yyline + 1, yycolumn + 1, type, text));
+    }
+
+    private void printError(String text) {
+        errors.append(String.format("Error: Unexpected character '%s' at Line %d, Column %d\n",
+                text, yyline + 1, yycolumn + 1));
+    }
+
+    public String getOutput() {
+        return output.toString();
+    }
+
+    public String getErrors() {
+        return errors.toString();
+    }
 
   /**
    * Creates a new scanner
@@ -717,7 +736,7 @@ public class Lexer {
       else {
         switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
           case 1:
-            { System.err.printf("Error: Unexpected character '%s' at Line %d, Column %d\n", yytext(), yyline + 1, yycolumn + 1);
+            { printError(yytext());
               adjustUnicodeColumn(yytext());
             }
           // fall through

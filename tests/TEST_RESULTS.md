@@ -1,17 +1,5 @@
 # Test results
 
-Compile and run from the project root:
-
-```text
-mkdir -p out
-javac -encoding UTF-8 -d out src/Lexer.java src/Main.java tests/TestRunner.java
-java -cp out TestRunner
-```
-
-The `-d out` option puts compiled classes in the `out` directory. The Java
-test runner compares standard output and standard error against the expected
-files in `tests/cases/`.
-
 | # | Case | Coverage | Result |
 |---|---|---|---|
 | 1 | `01_all_tokens` | All token types in a configuration | PASS |
