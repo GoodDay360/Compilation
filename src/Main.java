@@ -2,20 +2,32 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 
 public final class Main {
     private Main() {
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         if (args.length != 1) {
             System.err.println("Usage: java Main <configuration-file>");
             System.exit(2);
             return;
         }
 
-        Result result = scan(args[0]);
+        Result result;
+        try {
+            result = scan(args[0]);
+        } catch (NoSuchFileException exception) {
+            System.err.println("Error: File not found: " + Paths.get(args[0]).toAbsolutePath());
+            System.exit(1);
+            return;
+        } catch (IOException exception) {
+            System.err.println("Error: Could not read " + args[0] + ": " + exception.getMessage());
+            System.exit(1);
+            return;
+        }
         System.out.print(result.output);
         System.err.print(result.errors);
     }

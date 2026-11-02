@@ -1,5 +1,3 @@
-import java.io.*;
-
 %%
 
 %class Lexer
@@ -7,7 +5,7 @@ import java.io.*;
 %unicode
 %line
 %column
-%type void
+%int
 
 %{
     private final StringBuilder output = new StringBuilder();

@@ -1,0 +1,28 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Run scanner on a .cfg file",
+            "request": "launch",
+            "mainClass": "Main",
+            "cwd": "${workspaceFolder}",
+            "args": "${input:configFile}"
+        },
+        {
+            "type": "java",
+            "name": "Run all tests",
+            "request": "launch",
+            "mainClass": "TestRunner",
+            "cwd": "${workspaceFolder}"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "configFile",
+            "type": "promptString",
+            "description": "Configuration file to scan",
+            "default": "tests/cases/01_all_tokens.cfg"
+        }
+    ]
+}

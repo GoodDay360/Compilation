@@ -70,12 +70,15 @@ public final class TestRunner {
     }
 
     private static String readIfPresent(Path path) throws IOException {
-        // Treat absent expected-output files as empty.
-        return Files.exists(path) ? Files.readString(path, StandardCharsets.UTF_8) : "";
+        // Treat absent expected-output files as empty. Normalize Windows line endings, since Git
+        // may check out the expected files with \r\n while the lexer always writes \n.
+        return Files.exists(path)
+                ? Files.readString(path, StandardCharsets.UTF_8).replace("\r\n", "\n")
+                : "";
     }
 
     private static String printable(String text) {
         // Show line breaks in one line when reporting a mismatch.
-        return text.replace("\n", "\\n");
+        return text.replace("\r", "\\r").replace("\n", "\\n");
     }
 }

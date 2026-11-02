@@ -1,0 +1,2 @@
+# Keep expected test output byte-for-byte identical on every platform.
+tests/cases/* text eol=lf
